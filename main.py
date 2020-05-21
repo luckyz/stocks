@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/python
+#!/usr/bin/python3
 import json
 import os
 import os.path as path
@@ -56,12 +56,14 @@ class Stock(object):
 
 			# if key exists
 			if id.upper() in data['stocks'].keys():
-				modify = data['stocks'][id.upper()]
-				if currency in modify[currency]:
-					modify[currency]['amount'] =+ amount
+				# if currency is equal
+				if currency in data['stocks'][id.upper()]:
+					data['stocks'][id.upper()][currency]['date'] = timestamp
+					data['stocks'][id.upper()][currency]['amount'] = data['stocks'][id.upper()][currency]['amount'] + amount
+				# other currency
 				else:
-					modify[currency] = {}
-					modify[currency] = {
+					data['stocks'][id.upper()][currency] = {}
+					data['stocks'][id.upper()][currency] = {
 						'date': timestamp,
 						'amount': amount
 					}
@@ -75,7 +77,7 @@ class Stock(object):
 
 		except Exception as e:
 			logging.exception(e)
-			
+
 		return self.save(data)
 
 	def header_menu(self):
@@ -92,11 +94,11 @@ class Stock(object):
 
 	def add_menu(self):
 		self.header_menu()
-		id = raw_input("\n> Enter id of stock: ")
+		id = raw_input("> Enter id of stock: ")
 		self.header_menu()
-		amount = input("\n> Amount: ")
+		amount = input("> Amount: ")
 		self.header_menu()
-		currency = input("\n> Currency value: ")
+		currency = input("> Currency value: ")
 		self.header_menu()
 		currency = "{:.2f}".format(currency)
 		option = raw_input(
@@ -109,12 +111,12 @@ Currency: {2}
 		yes = ('y', 'yes', None)
 		no = ('n', 'no')
 		actions_yes = [
-			raw_input(f(timestamp, id.upper(), amount, currency) + "\n> Press any key to continue..."),
+			raw_input(f(timestamp, id.upper(), amount, str(currency)) + "\n> Press any key to continue..."),
 			self.add(timestamp, id.upper(), amount, str(currency)),
 			self.home_menu()
 		]
 		actions_no = [
-			raw_input("> Operation aborted. Preass any key to continue...\n"),
+			raw_input("> Operation aborted. Press any key to continue...\n"),
 			self.add_menu()
 		]
 
@@ -125,9 +127,11 @@ Currency: {2}
 
 def main():
 	s = Stock()
+
 	try:
 		while True:
-			next_menu(s.home_menu())
+			# next_menu(s.home_menu())
+			s.home_menu()
 
 	except Exception as e:
 		print(str(e))
