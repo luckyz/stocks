@@ -76,7 +76,7 @@ class Stock(object):
 		self.header_menu()
 		print("1. Add stock.")
 		print("2. Show existing stocks.")
-		print("3. Remove stock.")
+		print("3. Sell stock.")
 
 		option = raw_input("\n> Select option: ")
 
@@ -118,7 +118,7 @@ Currency: {2}
 
 		return (option, yes, no, actions_yes, actions_no)
 
-	def existing_menu(self):
+	def view_stocks(self):
 		self.header_menu()
 		data = self.load("data.json")
 		stocks = {}
@@ -139,19 +139,19 @@ Currency: {2}
 			if len(data['stocks'][id].keys()) > 1:
 				print("")
 
-		o = raw_input("\n> Press any key to back to main menu...")
+	def existing_menu(self):
+		self.view_stocks()
+		option = raw_input("\n> Press any key to back to main menu...")
 
-		return self.home_menu()
-
-	def remove_menu(self):
-		self.header_menu()
+	def sell_menu(self):
+		self.existing_menu()
+		# TODO: calculate balance of trade
 
 def main():
 	s = Stock()
 
 	try:
 		while True:
-			# next_menu(s.home_menu())
 			s.home_menu()
 
 	except Exception as e:
