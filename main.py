@@ -14,21 +14,9 @@ def get_timestamp():
 
 	return timestamp
 
-def next_menu(option):
-	for x in range(len(option)):
-		# data[x]:
-		# 0: option
-		# 1: "yes" options
-		# 2: "no" options
-		# 3: actions_yes
-		# 4: actions_no
-		data[x] = option[x]
-
-	if data[0] in data[1]:
-		return data[3]
-
-	elif data[0] in data[2]:
-		return data[4]
+def next_menu(options):
+	# TODO: accept dict with multiples options and their menus
+	pass
 
 class Stock(object):
 	def __init__(self):
@@ -48,31 +36,31 @@ class Stock(object):
 
 	def add(self, timestamp, id, amount, currency):
 		try:
-			if not path.exists('data.json'):
+			if not path.exists("data.json"):
 				data = {}
-				data['stocks'] = {}
+				data["stocks"] = {}
 			else:
-				data = self.load('data.json')
+				data = self.load("data.json")
 
 			# if key exists
-			if id.upper() in data['stocks'].keys():
+			if id.upper() in data["stocks"].keys():
 				# if currency is equal
-				if currency in data['stocks'][id.upper()]:
-					data['stocks'][id.upper()][currency]['date'] = timestamp
-					data['stocks'][id.upper()][currency]['amount'] = data['stocks'][id.upper()][currency]['amount'] + amount
+				if currency in data["stocks"][id.upper()]:
+					data["stocks"][id.upper()][currency]["date"] = timestamp
+					data["stocks"][id.upper()][currency]["amount"] = data["stocks"][id.upper()][currency]["amount"] + amount
 				# other currency
 				else:
-					data['stocks'][id.upper()][currency] = {}
-					data['stocks'][id.upper()][currency] = {
-						'date': timestamp,
-						'amount': amount
+					data["stocks"][id.upper()][currency] = {}
+					data["stocks"][id.upper()][currency] = {
+						"date": timestamp,
+						"amount": amount
 					}
 			# if key not exists
 			else:
-				data['stocks'][id.upper()] = {}
-				data['stocks'][id.upper()][currency] = {
-					'date': timestamp,
-					'amount': amount
+				data["stocks"][id.upper()] = {}
+				data["stocks"][id.upper()][currency] = {
+					"date": timestamp,
+					"amount": amount
 				}
 
 		except Exception as e:
@@ -87,10 +75,18 @@ class Stock(object):
 	def home_menu(self):
 		self.header_menu()
 		print("1. Add stock.")
-		print("2. Remove stock.")
-		option = input("\n> Select option: ")
+		print("2. Show existing stocks.")
+		print("3. Remove stock.")
 
-		return (option, (1,), (2,), (self.add_menu(),), (self.remove_menu(),))
+		option = raw_input("\n> Select option: ")
+
+		dict = {
+			"1": lambda: self.add_menu(),
+			"2": lambda: self.existing_menu(),
+			"3": lambda: self.remove_menu()
+		}
+
+		return dict.get(option, lambda: 'Invalid')()
 
 	def add_menu(self):
 		self.header_menu()
@@ -108,8 +104,8 @@ Currency: {2}
 \nThis is correct? ([y]/n): """.format(id.upper(), amount, currency))
 		timestamp = get_timestamp()
 		f = lambda t, i, a, c: "\n[Saved] {0} | {1} - {2} @ ${3}".format(t, i.upper(), a, c)
-		yes = ('y', 'yes', None)
-		no = ('n', 'no')
+		yes = ("y", "yes", None)
+		no = ("n", "no")
 		actions_yes = [
 			raw_input(f(timestamp, id.upper(), amount, str(currency)) + "\n> Press any key to continue..."),
 			self.add(timestamp, id.upper(), amount, str(currency)),
@@ -121,6 +117,31 @@ Currency: {2}
 		]
 
 		return (option, yes, no, actions_yes, actions_no)
+
+	def existing_menu(self):
+		self.header_menu()
+		data = self.load("data.json")
+		stocks = {}
+
+		for i, stock in enumerate(data['stocks'].items()):
+			stocks[i + 1] = stock[0]
+			print("{}. {}".format(i + 1, stock[0]))
+		option = input("\n> ")
+
+		self.header_menu()
+		id = stocks[option]
+		print("{0} {1} {0}".format("=" * 3, id))
+		for currency in data['stocks'][id].keys():
+			date = data['stocks'][id][currency]["date"]
+			amount = data['stocks'][id][currency]["amount"]
+			print("Date: {}".format(date))
+			print("Amount: {} @ Currency: ${}".format(amount, currency))
+			if len(data['stocks'][id].keys()) > 1:
+				print("")
+
+		o = raw_input("\n> Press any key to back to main menu...")
+
+		return self.home_menu()
 
 	def remove_menu(self):
 		self.header_menu()
@@ -137,5 +158,5 @@ def main():
 		print(str(e))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 	main()
